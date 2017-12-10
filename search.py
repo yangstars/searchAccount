@@ -3,6 +3,7 @@ from Tkinter import *
 import tkMessageBox
 import MySQLdb
 import ttk
+import datetime
 
 
 class loginPage(object):
@@ -132,26 +133,29 @@ class loginPage(object):
 class searchPage(object):
     def __init__(self, root, username, userid):
         self.userid = userid
+        self.root = root
         self.username = username
-        self.searchPage = Toplevel(root)
-        self.searchPage.geometry('800x500+500+250')
+        self.searchPage = Toplevel(self.root)
+        self.searchPage.geometry('800x550+400+140')
         self.searchPage.title('账号搜索')
+        self.searchButton = Button(self.searchPage, text='增加', command=self.add)
+        self.searchButton.grid(row=0, column=1)
 
         self.searchlabel = Label(self.searchPage, text='搜索条件：')
-        self.searchlabel.grid(row=0, column=0)
+        self.searchlabel.grid(row=1, column=0)
 
         self.appNameLabel = Label(self.searchPage, text='应用名:')
-        self.appNameLabel.grid(row=1, column=0)
+        self.appNameLabel.grid(row=2, column=0)
         self.appNameEntry = Entry(self.searchPage)
-        self.appNameEntry.grid(row=1, column=1)
+        self.appNameEntry.grid(row=2, column=1)
 
         self.appAccountLabel = Label(self.searchPage, text='账号:')
-        self.appAccountLabel.grid(row=2, column=0)
+        self.appAccountLabel.grid(row=3, column=0)
         self.appAccountEntry = Entry(self.searchPage)
-        self.appAccountEntry.grid(row=2, column=1)
+        self.appAccountEntry.grid(row=3, column=1)
 
         self.searchButton = Button(self.searchPage, text='搜索', command=self.get_tree)
-        self.searchButton.grid(row=3, column=1)
+        self.searchButton.grid(row=4, column=1)
 
         # self.resultLabel = Label(self.searchPage, text='搜素内容:')
         # self.resultLabel.grid(row=4, column=0)
@@ -179,8 +183,8 @@ class searchPage(object):
         self.tree.heading("f", text="创建时间")
         # 调用方法获取表格内容插入
         # self.get_tree()
-        self.tree.grid(row=4, column=1, sticky=NSEW)
-        self.vbar.grid(row=4, column=2, sticky=NS)
+        self.tree.grid(row=5, column=1, sticky=NSEW)
+        self.vbar.grid(row=5, column=2, sticky=NS)
 
         # 整体区域定位
         # self.frame_left_top.grid(row=0, column=0, padx=2, pady=5)
@@ -236,6 +240,88 @@ class searchPage(object):
         for account in result:
             a = account[2]
             self.tree.insert("", "end", values=(account[2],account[3],account[4],account[5],account[6],account[7]))
+
+    def add(self):
+        addPage(self.root,self.userid)
+
+
+class addPage(object):
+    def __init__(self, root, userid):
+        self.userid = userid
+        self.root = root
+        self.addPage = Toplevel(root)
+        self.addPage.geometry('240x180+630+200')
+        self.addPage.title('账号添加')
+
+        self.appNamelabel = Label(self.addPage, text='aap名称：')
+        self.appNamelabel.grid(row=1, column=0)
+        self.appNameEntry = Entry(self.addPage)
+        self.appNameEntry.grid(row=1, column=1)
+
+        self.loginAccountLabel = Label(self.addPage, text='登陆账号:')
+        self.loginAccountLabel.grid(row=2, column=0)
+        self.loginAccountEntry = Entry(self.addPage)
+        self.loginAccountEntry.grid(row=2, column=1)
+
+        self.pwdLabel = Label(self.addPage, text='登陆密码:')
+        self.pwdLabel.grid(row=3, column=0)
+        self.pwdEntry = Entry(self.addPage)
+        self.pwdEntry.grid(row=3, column=1)
+
+        self.mailLabel = Label(self.addPage, text='绑定邮箱:')
+        self.mailLabel.grid(row=4, column=0)
+        self.mailEntry = Entry(self.addPage)
+        self.mailEntry.grid(row=4, column=1)
+
+        self.phoneLabel = Label(self.addPage, text='手机号:')
+        self.phoneLabel.grid(row=5, column=0)
+        self.phoneEntry = Entry(self.addPage)
+        self.phoneEntry.grid(row=5, column=1)
+
+        self.searchButton = Button(self.addPage, text='添加', command=self.addAccount)
+        self.searchButton.grid(row=6, column=1)
+
+        self.root.mainloop()
+
+    def addAccount(self):
+        user_id=self.userid
+        app_name=self.appNameEntry.get().strip()
+        app_account=self.loginAccountEntry.get().strip()
+        app_pwd=self.pwdEntry.get().strip()
+        app_mail=self.mailEntry.get().strip()
+        app_phone=self.phoneEntry.get().strip()
+        create_time =datetime.datetime.now()
+        # 连接数据库
+        db = self.connectdb()
+        #判断是否有表，如果有直接插入，如果没有创建表之后插入
+        cursor = db.cursor() #使用cursor()方法获取操作游标
+        # SQL 插入语句
+        sql = "INSERT INTO app_account(user_id,app_name,app_account,app_pwd,app_mail,app_phone,create_time)VALUES ('%s', '%s', '%s', '%s', '%s','%s','%s')"%(user_id,app_name,app_account,app_pwd,app_mail,app_phone,create_time)
+        print  sql
+        try:
+            # 执行sql语句
+            cursor.execute(sql)
+            # 提交到数据库执行
+            db.commit()
+            # 隐藏登陆页面
+            self.addPage.withdraw()
+            tkMessageBox.showwarning('提示', '添加成功！')
+        except:
+            db.rollback()
+        # 关闭数据库连接
+        db.close()
+
+    #数据库连接
+    def connectdb(self):
+        print('连接到mysql服务器...')
+        # 打开数据库连接
+        # 用户名:hp, 密码:Hp12345.,用户名和密码需要改成你自己的mysql用户名和密码，并且要创建数据库TESTDB，并在TESTDB数据库中创建好表Student
+        db = MySQLdb.connect("127.0.0.1", "root", "root", "py",charset="utf8")
+        print('连接上了!')
+        return db
+
+
+
 
 if __name__ == '__main__':
     root = Tk()
