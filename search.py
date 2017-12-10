@@ -137,11 +137,11 @@ class searchPage(object):
         self.username = username
         self.searchPage = Toplevel(self.root)
         self.searchPage.geometry('800x550+400+140')
-        self.searchPage.title('账号搜索')
-        self.searchButton = Button(self.searchPage, text='增加', command=self.add)
+        self.searchPage.title('账号信息查询')
+        self.searchButton = Button(self.searchPage, text='添加信息', command=self.add)
         self.searchButton.grid(row=0, column=1)
 
-        self.searchlabel = Label(self.searchPage, text='搜索条件：')
+        self.searchlabel = Label(self.searchPage, text='查询条件：')
         self.searchlabel.grid(row=1, column=0)
 
         self.appNameLabel = Label(self.searchPage, text='应用名:')
@@ -223,9 +223,9 @@ class searchPage(object):
         # 判断是否有表，如果有直接插入，如果没有创建表之后插入
         cursor = db1.cursor()  # 使用cursor()方法获取操作游标
         if len(appName) == 0 and len(appAccount) != 0:
-            select_sql = "SELECT * from app_account WHERE user_id='%d'and app_account LIKE '%s'" % (self.userid, appAccount)
+            select_sql = "SELECT * from app_account WHERE user_id='%d'and app_account LIKE '%s'" % (self.userid, "%"+appAccount+"%")
         elif len(appName) != 0 and len(appAccount) == 0:
-            select_sql = "SELECT * from app_account WHERE user_id='%d'and app_name LIKE '%s'" % (self.userid, appName)
+            select_sql = "SELECT * from app_account WHERE user_id='%d'and app_name LIKE '%s'" % (self.userid, "%"+appName+"%")
         elif len(appName) == 0 and len(appAccount) == 0:
             select_sql = "SELECT * from app_account WHERE user_id='%d'" % (self.userid)
         else:
@@ -253,7 +253,7 @@ class addPage(object):
         self.addPage.geometry('240x180+630+200')
         self.addPage.title('账号添加')
 
-        self.appNamelabel = Label(self.addPage, text='aap名称：')
+        self.appNamelabel = Label(self.addPage, text='app名称：')
         self.appNamelabel.grid(row=1, column=0)
         self.appNameEntry = Entry(self.addPage)
         self.appNameEntry.grid(row=1, column=1)
